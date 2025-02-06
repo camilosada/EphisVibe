@@ -299,7 +299,7 @@ class NeuronData:
             NeuronData: The modified NeuronData object with added spiking activity.
         """
         if rfloc is not None or rf_loc_df is not None:
-            self = self.add_rf_loc(rfloc=rfloc, rf_loc_df=rf_loc_df)
+            self.add_rf_loc(rfloc=rfloc, rf_loc_df=rf_loc_df)
         for it in params:
             # Alignment and extraction of spike and mask data
             sp, mask = self.align_on(
