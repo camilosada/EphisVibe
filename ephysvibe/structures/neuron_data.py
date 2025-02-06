@@ -228,25 +228,39 @@ class NeuronData:
         for attr_name, attr_value in zip(new_values.keys(), new_values.values()):
             setattr(self, attr_name, attr_value)
 
-    def check_fr_loc(self, rf_loc_df: pd.DataFrame):
-        """Add receptive field position to NeuronData object.
+    def add_rf_loc(self, rfloc: str = None, rf_loc_df: pd.DataFrame = None):
+        """Adds receptive field position information to the NeuronData object.
 
         Args:
-            rf_loc (pd.DataFrame): DataFrame containing neuron IDs ('nid') and their corresponding 'rf_loc'.
+            rfloc (str, optional): A string specifying the receptive field location
+                ('contra' or 'ipsi'). Defaults to None.
+            rf_loc_df (pd.DataFrame, optional): A DataFrame containing neuron IDs ('nid')
+                and their corresponding receptive field locations ('contra' or 'ipsi'). Defaults to None.
+
+        Raises:
+            ValueError: If neither `rfloc` nor `rf_loc_df` is provided.
+            ValueError: If both `rfloc` and `rf_loc_df` are provided simultaneously.
+            IndexError: If the neuron ID ('nid') is not found in `rf_loc_df`.
+            ValueError: If rf_loc is not 'ipsi' or 'contra'.
 
         Returns:
             NeuronData: The modified NeuronData object.
-
-        Raises:
-            ValueError: If rf_loc is not 'ipsi' or 'contra'.
-            IndexError: If the neuron ID (nid) is not found in rf_loc_df.
         """
-        nid = self.get_neuron_id()
-        # Filter the DataFrame and check if any results are found
-        filtered_rf_loc = rf_loc_df[rf_loc_df["nid"] == nid]
-        if filtered_rf_loc.empty:
-            raise IndexError(f"No rf_loc found for neuron ID {nid}")
-        rfloc = filtered_rf_loc["rf_loc"].values[0]
+        if rfloc is None and rf_loc_df is None:
+            raise ValueError("Receptive field information must be provided.")
+
+        if rfloc is not None and rf_loc_df is not None:
+            raise ValueError(
+                "Receptive field information must be provided in only one argument."
+            )
+
+        if rf_loc_df is not None:
+            nid = self.get_neuron_id()
+            # Filter the DataFrame and check if any results are found
+            filtered_rf_loc = rf_loc_df[rf_loc_df["nid"] == nid]
+            if filtered_rf_loc.empty:
+                raise IndexError(f"No rf_loc found for neuron ID {nid}")
+            rfloc = filtered_rf_loc["rf_loc"].values[0]
         pos_code = self.pos_code
         rf_loc = np.zeros(pos_code.shape, dtype=np.int8)
         if rfloc == "ipsi":
@@ -256,9 +270,9 @@ class NeuronData:
             rf_loc[pos_code == 1] = 1
             rf_loc[pos_code == -1] = -1
         else:
-            raise ValueError('rf_loc must be "ipsi" or "contra"')
+            raise ValueError('rfloc must be "ipsi" or "contra"')
         setattr(self, "rf_loc", rf_loc)
-        return self
+        # return self
 
     def get_neu_align(
         self, params: List, delete_att: List = None, rf_loc: pd.DataFrame = None
