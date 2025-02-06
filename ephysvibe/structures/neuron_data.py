@@ -275,7 +275,11 @@ class NeuronData:
         # return self
 
     def get_neu_align(
-        self, params: List, delete_att: List = None, rf_loc: pd.DataFrame = None
+        self,
+        params: List,
+        delete_att: List = None,
+        rfloc: str = None,
+        rf_loc_df: pd.DataFrame = None,
     ):
         """Read, align, and add spiking activity to the NeuronData object.
 
@@ -287,13 +291,15 @@ class NeuronData:
                 - 'time_after': int, time after event
                 - 'select_block': int, block number
             delete_att (List[str], optional): List of attribute names to delete. Defaults to None.
-            rf_loc (pd.DataFrame, optional): DataFrame containing neuron IDs ('nid') and their corresponding 'rf_loc'. Defaults to None.
-
+            rfloc (str, optional): A string specifying the receptive field location
+                ('contra' or 'ipsi'). Defaults to None.
+            rf_loc_df (pd.DataFrame, optional): A DataFrame containing neuron IDs ('nid')
+                and their corresponding receptive field locations ('contra' or 'ipsi'). Defaults to None.
         Returns:
             NeuronData: The modified NeuronData object with added spiking activity.
         """
-        if rf_loc is not None:
-            self = self.check_fr_loc(rf_loc)
+        if rfloc is not None or rf_loc_df is not None:
+            self = self.add_rf_loc(rfloc=rfloc, rf_loc_df=rf_loc_df)
         for it in params:
             # Alignment and extraction of spike and mask data
             sp, mask = self.align_on(
